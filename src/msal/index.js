@@ -20,8 +20,7 @@ export default class AuthService {
       this.applicationConfig.authority,
       () => {
         // callback for login redirect
-      },
-      {
+      }, {
         redirectUri
       }
     );
@@ -99,7 +98,13 @@ export default class AuthService {
       body: requestBody
     };
     return fetch(`${this.graphUrlInvitation}`, options)
-      .then(response => response.json())
+      .then(response => {
+        if (response.status !== 201) {
+          console.log('Looks like there was a problem. Status Code: ' + response.status);
+          return;
+        }
+        response.json()
+      })
       .catch(response => {
         throw new Error(response.text());
       });
