@@ -1,9 +1,25 @@
 <template>
   <v-container fluid>
+    <Loading :value="dialog"></Loading>
     <template v-if="!user">
       <v-alert :value="true" type="warning">Please login to add users!</v-alert>
     </template>
-    <pre v-if="invitationResponse">{{ JSON.stringify(invitationResponse, null, 4) }}</pre>
+    <template>
+      <div class="mb-4">
+        <!-- <pre v-if="invitationResponse">{{ JSON.stringify(invitationResponse, null, 4) }}</pre> -->
+        <pre v-if="invitationResponse">
+        <strong>invitedUserDisplayName:</strong>
+        {{ invitationResponse.invitedUserDisplayName }}
+        <strong>inviteRedeemUrl:</strong>
+        {{ invitationResponse.inviteRedeemUrl }}
+        <strong>invitedUserEmailAddress:</strong>
+        {{ invitationResponse.invitedUserEmailAddress }}
+        <strong>invitedUser.id:</strong>
+        {{ invitationResponse.invitedUser.id }}
+         </pre>
+        <pre v-if="userInfo">{{ JSON.stringify(userInfo, null, 4) }}</pre>
+      </div>
+    </template>
     <v-layout justify-center>
       <template v-if="user">
         <v-flex text-xs-center xs12 sm6>
@@ -40,6 +56,7 @@
                   @click="invitationCall"
                   class="mr-2"
                 >Submit</v-btn>
+                <v-btn color="warning" @click="callAPI" class="mr-2">Test</v-btn>
                 <v-btn color="error" @click="reset">Reset</v-btn>
               </v-form>
             </v-card-text>
@@ -52,11 +69,13 @@
 
 <script>
 import usersData from "./UsersData";
-import { validationMixin } from "vuelidate";
-import { required, email } from "vuelidate/lib/validators";
+import Loading from "@/components/Loading";
 
 export default {
   name: "UserAdd",
+  components: {
+    Loading
+  },
   props: {
     caption: {
       type: String,
@@ -83,15 +102,9 @@ export default {
       default: false
     }
   },
-  mixins: [validationMixin],
-  validations: {
-    name: { required },
-    last: { required },
-    phone: { required },
-    email: { required, email }
-  },
   data: () => {
     return {
+      dialog: false,
       user: null,
       newUserInfo: {
         email: "",
@@ -101,6 +114,7 @@ export default {
       },
       apiCallFailed: false,
       invitationResponse: false,
+      userInfo: false,
       valid: true,
       nameRules: [v => !!v || "Name is required"],
       lastRules: [v => !!v || "Name is required"],
@@ -110,11 +124,17 @@ export default {
       ]
     };
   },
+  watch: {
+    dialog(val) {
+      if (!val) return;
+      setTimeout(() => (this.dialog = false), 4000);
+    }
+  },
   computed: {
     invitationInfo() {
       return {
         invitedUserEmailAddress: this.newUserInfo.email,
-        inviteRedirectUrl: "https://chiesi-dev.exomtrials.com/acm",
+        inviteRedirectUrl: "https://chiesi-dev.exomtrials.com/",
         invitedUserDisplayName: `${this.newUserInfo.first} ${
           this.newUserInfo.last
         }`,
@@ -129,6 +149,7 @@ export default {
     reset() {
       this.$refs.form.reset();
       this.invitationResponse = false;
+      this.userInfo = false;
     },
     getBadge(status) {
       return status === "Active"
@@ -156,6 +177,7 @@ export default {
     },
     invitationCall() {
       if (this.$refs.form.validate()) {
+        this.dialog = true;
         this.apiCallFailed = false;
         this.$AuthService.getGraphToken().then(
           token => {
@@ -164,19 +186,46 @@ export default {
               .then(
                 data => {
                   this.invitationResponse = data;
+                  this.dialog = false;
                 },
                 error => {
                   console.error(error);
                   this.apiCallFailed = true;
+                  this.dialog = false;
                 }
               );
           },
           error => {
             console.error(error);
             this.apiCallFailed = true;
+            this.dialog = false;
           }
         );
       }
+    },
+    callAPI() {
+      this.dialog = true;
+      this.apiCallFailed = false;
+      this.$AuthService.getGraphToken().then(
+        token => {
+          this.$AuthService.getGraphUserInfo(token).then(
+            data => {
+              this.userInfo = data;
+              this.dialog = false;
+            },
+            error => {
+              console.error(error);
+              this.apiCallFailed = true;
+              this.dialog = false;
+            }
+          );
+        },
+        error => {
+          console.error(error);
+          this.apiCallFailed = true;
+          this.dialog = false;
+        }
+      );
     }
   }
 };
