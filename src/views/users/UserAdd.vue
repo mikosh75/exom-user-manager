@@ -6,18 +6,42 @@
     </template>
     <template>
       <div class="mb-4">
-        <!-- <pre v-if="invitationResponse">{{ JSON.stringify(invitationResponse, null, 4) }}</pre> -->
-        <pre v-if="invitationResponse">
-        <strong>invitedUserDisplayName:</strong>
-        {{ invitationResponse.invitedUserDisplayName }}
-        <strong>inviteRedeemUrl:</strong>
-        {{ invitationResponse.inviteRedeemUrl }}
-        <strong>invitedUserEmailAddress:</strong>
-        {{ invitationResponse.invitedUserEmailAddress }}
-        <strong>invitedUser.id:</strong>
-        {{ invitationResponse.invitedUser.id }}
-         </pre>
-        <pre v-if="userInfo">{{ JSON.stringify(userInfo, null, 4) }}</pre>
+        <template v-if="invitationResponse">
+          <v-alert
+            v-if="invitationResponse.error"
+            :value="true"
+            type="error"
+          >{{ invitationResponse.code }} {{ invitationResponse.message }}</v-alert>
+          <v-alert v-else :value="true" type="success">User creation: OK</v-alert>
+          <!-- <pre v-if="invitationResponse">{{ JSON.stringify(invitationResponse, null, 4) }}</pre> -->
+          <pre>
+<strong>invitedUserDisplayName:</strong>
+{{ invitationResponse.invitedUserDisplayName }}
+<strong>inviteRedeemUrl:</strong>
+{{ invitationResponse.inviteRedeemUrl }}
+<strong>invitedUserEmailAddress:</strong>
+{{ invitationResponse.invitedUserEmailAddress }}
+<strong>invitedUser.id:</strong>
+{{ invitationResponse.invitedUser.id }}
+<strong>invitedUserEmailAddress:</strong>
+{{ invitationResponse.sendInvitationMessage }}
+</pre>
+        </template>
+        <template v-if="userToBeAdded">
+          <v-alert v-if="addToGroupResponse" :value="true" type="error">
+            User addition to the group: KO -
+            {{ addToGroupResponse.json().error.code }}, {{ addToGroupResponse.json().error.message }}
+          </v-alert>
+          <v-alert v-else :value="true" type="success">User addition to the group: OK</v-alert>
+          <pre v-if="addToGroupResponse">
+{{ JSON.stringify(addToGroupResponse, null, 4) }}
+</pre>
+        </template>
+        <template v-if="userInfo">
+          <pre>
+{{ JSON.stringify(userInfo, null, 4) }}
+</pre>
+        </template>
       </div>
     </template>
     <v-layout justify-center>
@@ -114,6 +138,8 @@ export default {
       },
       apiCallFailed: false,
       invitationResponse: false,
+      addToGroupResponse: false,
+      userToBeAdded: false,
       userInfo: false,
       valid: true,
       nameRules: [v => !!v || "Name is required"],
@@ -138,7 +164,12 @@ export default {
         invitedUserDisplayName: `${this.newUserInfo.first} ${
           this.newUserInfo.last
         }`,
-        sendInvitationMessage: false
+        sendInvitationMessage: true,
+        invitedUserMessageInfo: {
+          customizedMessageBody:
+            "Dear user, you can login to TRITRIAL Study Portal here: https://chiesi-dev.exomtrials.com"
+          /* messageLanguage: "it-IT" */
+        }
       };
     }
   },
@@ -146,6 +177,9 @@ export default {
     this.setUser();
   },
   methods: {
+    sleep(milliseconds) {
+      return new Promise(resolve => setTimeout(resolve, milliseconds));
+    },
     reset() {
       this.$refs.form.reset();
       this.invitationResponse = false;
@@ -186,7 +220,29 @@ export default {
               .then(
                 data => {
                   this.invitationResponse = data;
-                  this.dialog = false;
+                  this.userToBeAdded = this.invitationResponse.invitedUser.id;
+
+                  this.$AuthService
+                    .addUserToGroup(
+                      token,
+                      JSON.stringify({
+                        "@odata.id": `https://graph.microsoft.com/v1.0/directoryObjects/${
+                          this.userToBeAdded
+                        }`
+                      })
+                    )
+                    .then(
+                      data => {
+                        console.log(data);
+                        this.addToGroupResponse = data;
+                        this.dialog = false;
+                      },
+                      error => {
+                        console.error(error);
+                        this.apiCallFailed = true;
+                        this.dialog = false;
+                      }
+                    );
                 },
                 error => {
                   console.error(error);

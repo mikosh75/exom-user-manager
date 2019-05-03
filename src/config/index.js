@@ -8,5 +8,7 @@ export default {
   graphscopes: ["user.read"],
   graphendpoint: "https://graph.microsoft.com/v1.0/me",
   graphendpointinvitation: "https://graph.microsoft.com/v1.0/invitations",
+  graphendpointaddusertogroup:
+    "https://graph.microsoft.com/v1.0/groups/044532dc-a224-4744-8e68-70dc06d29811/members/$ref",
   appinsightsid: ""
 };

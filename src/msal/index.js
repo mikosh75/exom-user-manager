@@ -10,6 +10,7 @@ export default class AuthService {
     let PostLogoutRedirectUri = "/";
     this.graphUrl = config.graphendpoint;
     this.graphUrlInvitation = config.graphendpointinvitation;
+    this.graphUrlAddUserToGroup = config.graphendpointaddusertogroup;
     this.applicationConfig = {
       clientID: config.clientid,
       authority: config.authority,
@@ -20,7 +21,8 @@ export default class AuthService {
       this.applicationConfig.authority,
       () => {
         // callback for login redirect
-      }, {
+      },
+      {
         redirectUri
       }
     );
@@ -98,15 +100,26 @@ export default class AuthService {
       body: requestBody
     };
     return fetch(`${this.graphUrlInvitation}`, options)
-      .then(response => {
-        if (response.status !== 201) {
-          console.log('Looks like there was a problem. Status Code: ' + response.status);
-          return;
-        }
-        response.json()
-      })
+      .then(response => response.json())
       .catch(response => {
         throw new Error(response.text());
+      });
+  }
+
+  addUserToGroup(token, requestBody) {
+    const headers = new Headers({
+      Authorization: `Bearer ${token}`,
+      "Content-type": "application/json"
+    });
+    const options = {
+      headers,
+      method: "POST",
+      body: requestBody
+    };
+    return fetch(`${this.graphUrlAddUserToGroup}`, options)
+      .then(response => response.json())
+      .catch(response => {
+        throw new Error(response.json());
       });
   }
 
