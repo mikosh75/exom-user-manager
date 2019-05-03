@@ -3,7 +3,7 @@
     <v-dialog v-model="value" transition="false" persistent content content-class="centered-dialog">
       <v-container fill-height>
         <v-layout column justify-center align-center>
-          <v-progress-circular indeterminate :size="70" :width="7" :color="progressColor"></v-progress-circular>
+          <v-progress-circular indeterminate :size="70" :width="5" :color="progressColor"></v-progress-circular>
           <h1 v-if="message != null">{{message}}</h1>
         </v-layout>
       </v-container>
