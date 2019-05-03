@@ -1,5 +1,5 @@
 <template>
-  <v-app id="inspire">
+  <v-app>
     <v-navigation-drawer v-model="drawer" fixed app>
       <v-list dense>
         <v-list-tile to="/" @click>
@@ -24,7 +24,7 @@
       <v-toolbar-side-icon @click.stop="drawer = !drawer"></v-toolbar-side-icon>
       <v-toolbar-title>User Manager</v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-toolbar-items class="hidden-sm-and-down">
+      <v-toolbar-items class="hidden-xs-and-down">
         <template v-if="!user">
           <v-btn flat @click="login">login</v-btn>
         </template>
@@ -34,7 +34,7 @@
               <v-btn flat v-on="on" @click>{{ user.name }}</v-btn>
             </template>
             <v-list>
-              <v-list-tile @click>
+              <v-list-tile @click to="profile">
                 <v-list-tile-title>Profile</v-list-tile-title>
               </v-list-tile>
               <v-list-tile @click>
@@ -61,8 +61,9 @@
     <v-content>
       <router-view></router-view>
     </v-content>
-    <v-footer color="primary" app>
-      <span class="white--text">&copy; 2019</span>
+    <v-footer color="primary" app class="pa-3">
+      <v-spacer></v-spacer>
+      <div class="white--text">&copy; Exom Group {{ new Date().getFullYear() }}</div>
     </v-footer>
   </v-app>
 </template>
