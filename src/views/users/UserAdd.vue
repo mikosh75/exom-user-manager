@@ -12,9 +12,11 @@
             :value="true"
             type="error"
           >{{ invitationResponse.code }} {{ invitationResponse.message }}</v-alert>
-          <v-alert v-else :value="true" type="success">User creation: OK</v-alert>
+          <v-alert v-else :value="true" type="success">
+            User creation: <strong>OK</strong> - {{ invitationResponse.invitedUserDisplayName }} - ID {{ invitationResponse.invitedUser.id }}
+          </v-alert>
           <!-- <pre v-if="invitationResponse">{{ JSON.stringify(invitationResponse, null, 4) }}</pre> -->
-          <pre>
+          <!--           <pre>
 <strong>invitedUserDisplayName:</strong>
 {{ invitationResponse.invitedUserDisplayName }}
 <strong>inviteRedeemUrl:</strong>
@@ -23,24 +25,26 @@
 {{ invitationResponse.invitedUserEmailAddress }}
 <strong>invitedUser.id:</strong>
 {{ invitationResponse.invitedUser.id }}
-<strong>invitedUserEmailAddress:</strong>
+<strong>sendInvitationMessage:</strong>
 {{ invitationResponse.sendInvitationMessage }}
-</pre>
+          </pre>-->
         </template>
         <template v-if="userToBeAdded">
           <v-alert v-if="addToGroupResponse" :value="true" type="error">
-            User addition to the group: KO -
+            User addition to group: <strong>KO</strong> -
             {{ addToGroupResponse.json().error.code }}, {{ addToGroupResponse.json().error.message }}
           </v-alert>
-          <v-alert v-else :value="true" type="success">User addition to the group: OK</v-alert>
-          <pre v-if="addToGroupResponse">
+          <v-alert v-else :value="true" type="success">User addition to group: <strong>OK</strong></v-alert>
+
+          <v-alert v-if="updateUserResponse" :value="true" type="error">
+            Update user first name and surname: <strong>KO</strong> -
+            {{ updateUserResponse.json().error.code }}, {{ updateUserResponse.json().error.message }}
+          </v-alert>
+          <v-alert v-else :value="true" type="success">User attributes update: <strong>OK</strong></v-alert>
+
+          <!-- <pre v-if="addToGroupResponse">
 {{ JSON.stringify(addToGroupResponse, null, 4) }}
-</pre>
-        </template>
-        <template v-if="userInfo">
-          <pre>
-{{ JSON.stringify(userInfo, null, 4) }}
-</pre>
+          </pre>-->
         </template>
       </div>
     </template>
@@ -73,14 +77,13 @@
                   label="Last name"
                   required
                 ></v-text-field>
-                <v-text-field v-model="newUserInfo.phone" label="Mobile phone"></v-text-field>
+                <v-text-field v-model="newUserInfo.phone" :rules="phoneRules" label="Mobile phone"></v-text-field>
                 <v-btn
                   :disabled="!valid"
                   color="success"
                   @click="invitationCall"
                   class="mr-2"
                 >Submit</v-btn>
-                <v-btn color="warning" @click="callAPI" class="mr-2">Test</v-btn>
                 <v-btn color="error" @click="reset">Reset</v-btn>
               </v-form>
             </v-card-text>
@@ -139,6 +142,7 @@ export default {
       apiCallFailed: false,
       invitationResponse: false,
       addToGroupResponse: false,
+      updateUserResponse: false,
       userToBeAdded: false,
       userInfo: false,
       valid: true,
@@ -146,15 +150,16 @@ export default {
       lastRules: [v => !!v || "Name is required"],
       emailRules: [
         v => !!v || "E-mail is required",
-        v => /.+@.+/.test(v) || "E-mail must be valid"
+        v =>
+          /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(v) ||
+          "E-mail must be valid"
+      ],
+      phoneRules: [
+        v =>
+          /^(\s*|[+]{1}[0-9]{1,3}[0-9]{9,10})$/.test(v) ||
+          "Phone must start with country code and contain only numbers"
       ]
     };
-  },
-  watch: {
-    dialog(val) {
-      if (!val) return;
-      setTimeout(() => (this.dialog = false), 4000);
-    }
   },
   computed: {
     invitationInfo() {
@@ -164,13 +169,27 @@ export default {
         invitedUserDisplayName: `${this.newUserInfo.first} ${
           this.newUserInfo.last
         }`,
-        sendInvitationMessage: true,
+        sendInvitationMessage: false,
         invitedUserMessageInfo: {
           customizedMessageBody:
             "Dear user, you can login to TRITRIAL Study Portal here: https://chiesi-dev.exomtrials.com"
           /* messageLanguage: "it-IT" */
         }
       };
+    },
+    userPropertiesToUpdate() {
+      if (this.newUserInfo.phone) {
+        return {
+          givenName: this.newUserInfo.first,
+          surName: this.newUserInfo.last,
+          mobilePhone: this.newUserInfo.phone
+        };
+      } else {
+        return {
+          givenName: this.newUserInfo.first,
+          surName: this.newUserInfo.last
+        };
+      }
     }
   },
   created() {
@@ -183,6 +202,9 @@ export default {
     reset() {
       this.$refs.form.reset();
       this.invitationResponse = false;
+      this.addToGroupResponse = false;
+      this.updateUserResponse = false;
+      this.userToBeAdded = false;
       this.userInfo = false;
     },
     getBadge(status) {
@@ -233,8 +255,25 @@ export default {
                     )
                     .then(
                       data => {
-                        console.log(data);
                         this.addToGroupResponse = data;
+                        this.dialog = false;
+                      },
+                      error => {
+                        console.error(error);
+                        this.apiCallFailed = true;
+                        this.dialog = false;
+                      }
+                    );
+
+                  this.$AuthService
+                    .updateUser(
+                      token,
+                      this.userToBeAdded,
+                      JSON.stringify(this.userPropertiesToUpdate)
+                    )
+                    .then(
+                      data => {
+                        this.updateUserResponse = data;
                         this.dialog = false;
                       },
                       error => {
@@ -258,30 +297,6 @@ export default {
           }
         );
       }
-    },
-    callAPI() {
-      this.dialog = true;
-      this.apiCallFailed = false;
-      this.$AuthService.getGraphToken().then(
-        token => {
-          this.$AuthService.getGraphUserInfo(token).then(
-            data => {
-              this.userInfo = data;
-              this.dialog = false;
-            },
-            error => {
-              console.error(error);
-              this.apiCallFailed = true;
-              this.dialog = false;
-            }
-          );
-        },
-        error => {
-          console.error(error);
-          this.apiCallFailed = true;
-          this.dialog = false;
-        }
-      );
     }
   }
 };
