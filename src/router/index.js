@@ -6,6 +6,7 @@ const DefaultContainer = () => import('@/containers/DefaultContainer')
 
 // Views
 const Dashboard = () => import('@/views/Dashboard')
+const Profile = () => import('@/views/Profile')
 
 // Users
 const UserAdd = () => import('@/views/users/UserAdd')
@@ -32,11 +33,21 @@ export default new Router({
           component: Dashboard
         },
         {
+          path: 'profile',
+          meta: {
+            label: 'User profile'
+          },
+          name: 'Profile',
+          component: Profile
+        },
+        {
           path: 'useradd',
           meta: {
-            label: 'Add User'
+            label: 'Add user'
           },
-          component: {
+          name: 'Useradd',
+          component: UserAdd
+          /* component: {
             render(c) {
               return c('router-view')
             }
@@ -45,7 +56,7 @@ export default new Router({
             path: '',
             name: 'Useradd',
             component: UserAdd,
-          }]
+          }] */
         }
       ]
     },
