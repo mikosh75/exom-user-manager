@@ -11,6 +11,7 @@ export default class AuthService {
     this.graphUrl = config.graphendpoint;
     this.graphUrlInvitation = config.graphendpointinvitation;
     this.graphUrlAddUserToGroup = config.graphendpointaddusertogroup;
+    this.graphUrlUpdateUser = config.graphendpointupdateuser;
     this.applicationConfig = {
       clientID: config.clientid,
       authority: config.authority,
@@ -21,8 +22,7 @@ export default class AuthService {
       this.applicationConfig.authority,
       () => {
         // callback for login redirect
-      },
-      {
+      }, {
         redirectUri
       }
     );
@@ -89,7 +89,7 @@ export default class AuthService {
       });
   }
 
-  createGraphInvitation(token, requestBody) {
+  async createGraphInvitation(token, requestBody) {
     const headers = new Headers({
       Authorization: `Bearer ${token}`,
       "Content-type": "application/json"
@@ -99,14 +99,15 @@ export default class AuthService {
       method: "POST",
       body: requestBody
     };
-    return fetch(`${this.graphUrlInvitation}`, options)
-      .then(response => response.json())
-      .catch(response => {
-        throw new Error(response.text());
-      });
+    try {
+      const response = await fetch(`${this.graphUrlInvitation}`, options);
+      return await response.json();
+    } catch (response_1) {
+      throw new Error(response_1.text());
+    }
   }
 
-  addUserToGroup(token, requestBody) {
+  async addUserToGroup(token, requestBody) {
     const headers = new Headers({
       Authorization: `Bearer ${token}`,
       "Content-type": "application/json"
@@ -116,11 +117,30 @@ export default class AuthService {
       method: "POST",
       body: requestBody
     };
-    return fetch(`${this.graphUrlAddUserToGroup}`, options)
-      .then(response => response.json())
-      .catch(response => {
-        throw new Error(response.json());
-      });
+    try {
+      const response = await fetch(`${this.graphUrlAddUserToGroup}`, options);
+      if (response.status != 204) return await response.json();
+    } catch (response_1) {
+      throw new Error(response_1.json());
+    }
+  }
+
+  async updateUser(token, user, requestBody) {
+    const headers = new Headers({
+      Authorization: `Bearer ${token}`,
+      "Content-type": "application/json"
+    });
+    const options = {
+      headers,
+      method: "PATCH",
+      body: requestBody
+    };
+    try {
+      const response = await fetch(`${this.graphUrlUpdateUser}/${user}`, options);
+      if (response.status != 204) return await response.json();
+    } catch (response_1) {
+      throw new Error(response_1.json());
+    }
   }
 
   // Utility
