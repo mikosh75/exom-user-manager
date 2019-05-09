@@ -1,51 +1,53 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import Vue from "vue";
+import Router from "vue-router";
 
 // Containers
-const DefaultContainer = () => import('@/containers/DefaultContainer')
+const DefaultContainer = () => import("@/containers/DefaultContainer");
 
 // Views
-const Dashboard = () => import('@/views/Dashboard')
-const Profile = () => import('@/views/Profile')
+const Dashboard = () => import("@/views/Dashboard");
+const Profile = () => import("@/views/Profile");
 
 // Users
-const UserAdd = () => import('@/views/users/UserAdd')
+const UserAdd = () => import("@/views/users/UserAdd");
 
 // Authentication
-const AuthTest = () => import('@/views/auth/Test')
+const AuthTest = () => import("@/views/auth/Test");
 
-Vue.use(Router)
+Vue.use(Router);
 
 export default new Router({
-  mode: 'history', // https://router.vuejs.org/api/#mode
-  linkActiveClass: 'open active',
+  mode: "history", // https://router.vuejs.org/api/#mode
+  linkActiveClass: "open active",
   scrollBehavior: () => ({
     y: 0
   }),
-  routes: [{
-      path: '/',
-      redirect: '/dashboard',
-      name: 'Home',
+  routes: [
+    {
+      path: "/",
+      redirect: "/dashboard",
+      name: "Home",
       component: DefaultContainer,
-      children: [{
-          path: 'dashboard',
-          name: 'Dashboard',
+      children: [
+        {
+          path: "dashboard",
+          name: "Dashboard",
           component: Dashboard
         },
         {
-          path: 'profile',
+          path: "profile",
           meta: {
-            label: 'User profile'
+            label: "User profile"
           },
-          name: 'Profile',
+          name: "Profile",
           component: Profile
         },
         {
-          path: 'useradd',
+          path: "useradd",
           meta: {
-            label: 'Add user'
+            label: "Add user"
           },
-          name: 'Useradd',
+          name: "Useradd",
           component: UserAdd
           /* component: {
             render(c) {
@@ -61,19 +63,21 @@ export default new Router({
       ]
     },
     {
-      path: '/auth',
-      redirect: '/auth/test',
-      name: 'Auth',
+      path: "/auth",
+      redirect: "/auth/test",
+      name: "Auth",
       component: {
         render(c) {
-          return c('router-view')
+          return c("router-view");
         }
       },
-      children: [{
-        path: 'test',
-        name: 'Test',
-        component: AuthTest
-      }]
+      children: [
+        {
+          path: "test",
+          name: "Test",
+          component: AuthTest
+        }
+      ]
     }
   ]
-})
+});
