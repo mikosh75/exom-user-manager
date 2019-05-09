@@ -6,7 +6,10 @@ import config from "../config";
 export default class AuthService {
   constructor() {
     // let redirectUri = window.location.origin;
-    let redirectUri = config.redirecturl;
+    let redirectUri =
+      process.env.NODE_ENV === "production"
+        ? config.redirecturlprod
+        : config.redirecturl;
     let PostLogoutRedirectUri = "/";
     this.graphUrl = config.graphendpoint;
     this.graphUrlInvitation = config.graphendpointinvitation;
@@ -22,7 +25,8 @@ export default class AuthService {
       this.applicationConfig.authority,
       () => {
         // callback for login redirect
-      }, {
+      },
+      {
         redirectUri
       }
     );
@@ -136,7 +140,10 @@ export default class AuthService {
       body: requestBody
     };
     try {
-      const response = await fetch(`${this.graphUrlUpdateUser}/${user}`, options);
+      const response = await fetch(
+        `${this.graphUrlUpdateUser}/${user}`,
+        options
+      );
       if (response.status != 204) return await response.json();
     } catch (response_1) {
       throw new Error(response_1.json());
