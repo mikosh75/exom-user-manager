@@ -25,7 +25,7 @@ export default new Router({
   routes: [
     {
       path: "/exom-user-manager",
-      redirect: "/exom-user-manager/dashboard",
+      redirect: { name: "Dashboard" },
       name: "Home",
       component: DefaultContainer,
       children: [
@@ -64,7 +64,7 @@ export default new Router({
     },
     {
       path: "/exom-user-manager/auth",
-      redirect: "/exom-user-manager/auth/test",
+      redirect: { name: "AuthTest" },
       name: "Auth",
       component: {
         render(c) {
@@ -74,7 +74,7 @@ export default new Router({
       children: [
         {
           path: "test",
-          name: "Test",
+          name: "AuthTest",
           component: AuthTest
         }
       ]
