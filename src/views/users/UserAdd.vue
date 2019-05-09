@@ -13,7 +13,9 @@
             type="error"
           >{{ invitationResponse.code }} {{ invitationResponse.message }}</v-alert>
           <v-alert v-else :value="true" type="success">
-            User creation: <strong>OK</strong> - {{ invitationResponse.invitedUserDisplayName }} - ID {{ invitationResponse.invitedUser.id }}
+            User creation:
+            <strong>OK</strong>
+            - {{ invitationResponse.invitedUserDisplayName }} - ID {{ invitationResponse.invitedUser.id }}
           </v-alert>
           <!-- <pre v-if="invitationResponse">{{ JSON.stringify(invitationResponse, null, 4) }}</pre> -->
           <!--           <pre>
@@ -31,16 +33,26 @@
         </template>
         <template v-if="userToBeAdded">
           <v-alert v-if="addToGroupResponse" :value="true" type="error">
-            User addition to group: <strong>KO</strong> -
+            User addition to group:
+            <strong>KO</strong>
+            -
             {{ addToGroupResponse.json().error.code }}, {{ addToGroupResponse.json().error.message }}
           </v-alert>
-          <v-alert v-else :value="true" type="success">User addition to group: <strong>OK</strong></v-alert>
+          <v-alert v-else :value="true" type="success">
+            User addition to group:
+            <strong>OK</strong>
+          </v-alert>
 
           <v-alert v-if="updateUserResponse" :value="true" type="error">
-            Update user first name and surname: <strong>KO</strong> -
+            Update user first name and surname:
+            <strong>KO</strong>
+            -
             {{ updateUserResponse.json().error.code }}, {{ updateUserResponse.json().error.message }}
           </v-alert>
-          <v-alert v-else :value="true" type="success">User attributes update: <strong>OK</strong></v-alert>
+          <v-alert v-else :value="true" type="success">
+            User attributes update:
+            <strong>OK</strong>
+          </v-alert>
 
           <!-- <pre v-if="addToGroupResponse">
 {{ JSON.stringify(addToGroupResponse, null, 4) }}
@@ -157,7 +169,7 @@ export default {
       phoneRules: [
         v =>
           /^(\s*|[+]{1}[0-9]{1,3}[0-9]{9,10})$/.test(v) ||
-          "Phone must start with country code and contain only numbers"
+          "Phone must start with country code (+39) and contain only numbers"
       ]
     };
   },
@@ -275,6 +287,7 @@ export default {
                       data => {
                         this.updateUserResponse = data;
                         this.dialog = false;
+                        this.$refs.form.reset();
                       },
                       error => {
                         console.error(error);
