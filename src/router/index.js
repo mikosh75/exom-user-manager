@@ -14,6 +14,9 @@ const UserAdd = () => import("@/views/users/UserAdd");
 // Authentication
 const AuthTest = () => import("@/views/auth/Test");
 
+// Authentication
+const CheckTest = () => import("@/views/test/Check");
+
 Vue.use(Router);
 
 export default new Router({
@@ -22,14 +25,14 @@ export default new Router({
   scrollBehavior: () => ({
     y: 0
   }),
-  routes: [
-    {
+  routes: [{
       path: "/exom-user-manager",
-      redirect: { name: "Dashboard" },
+      redirect: {
+        name: "Dashboard"
+      },
       name: "Home",
       component: DefaultContainer,
-      children: [
-        {
+      children: [{
           path: "dashboard",
           name: "Dashboard",
           component: Dashboard
@@ -59,25 +62,50 @@ export default new Router({
             name: 'Useradd',
             component: UserAdd,
           }] */
-        }
+        },
+        {
+          path: "test",
+          meta: {
+            label: "Test"
+          },
+          name: "Test",
+          component: CheckTest
+        },
       ]
     },
     {
       path: "/exom-user-manager/auth",
-      redirect: { name: "AuthTest" },
+      redirect: {
+        name: "AuthTest"
+      },
       name: "Auth",
       component: {
         render(c) {
           return c("router-view");
         }
       },
-      children: [
-        {
-          path: "test",
-          name: "AuthTest",
-          component: AuthTest
-        }
-      ]
+      children: [{
+        path: "test",
+        name: "AuthTest",
+        component: AuthTest
+      }]
     }
+    /*     {
+          path: "/exom-user-manager/test",
+          redirect: { name: "CheckTest" },
+          name: "Test",
+          component: {
+            render(c) {
+              return c("router-view");
+            }
+          },
+          children: [
+            {
+              path: "check",
+              name: "CheckTest",
+              component: CheckTest
+            }
+          ]
+        } */
   ]
 });
